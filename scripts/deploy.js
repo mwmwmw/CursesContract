@@ -4,16 +4,16 @@ const main = async () => {
     await nftContract.deployed();
     console.log("Contract deployed to:", nftContract.address);
   
-    // // Call the function.
-    // let txn = await nftContract.GenNFT("Noise Block 1", "First Noise Block");
-    // // Wait for it to be mined.
-    // await txn.wait()
-    // console.log("Minted NFT #1")
+    // Call the function.
+    let txn = await nftContract.GenNFT("Noise Block 1", "First Noise Block");
+    // Wait for it to be mined.
+    await txn.wait()
+    console.log("Minted NFT #1")
   
-    // txn = await nftContract.GenNFT("Noise Block 2", "Second Noise Block");
-    // // Wait for it to be mined.
-    // await txn.wait()
-    // console.log("Minted NFT #2")
+    txn = await nftContract.GenNFT("Noise Block 2", "Second Noise Block");
+    // Wait for it to be mined.
+    await txn.wait()
+    console.log("Minted NFT #2")
   };
   
   const runMain = async () => {

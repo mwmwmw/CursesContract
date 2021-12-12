@@ -4,17 +4,21 @@ const main = async () => {
     const nftContract = await nftFactory.deploy();
     await nftContract.deployed();
 
-    console.log("Contract deployed to:", nftContract.address);
+    console.log("Yo, Contract deployed to:", nftContract.address);
 
 
-    let txn = await nftContract.GenNFT("My NFT", "this is my nft")
+    let txn = await nftContract.GenNFT("My NFT", "", {gasLimit: "30000000"});
+
+    console.log(txn)
     // Wait for it to be mined.
-    await txn.wait()
+    await txn.wait();
   
     // Mint another NFT for fun.
-    txn = await nftContract.GenNFT("Your NFT", "this is your nft")
+    txn = await nftContract.GenNFT("My NFT", "", {gasLimit: "30000000"});
+
+    console.log(txn)
     // Wait for it to be mined.
-    await txn.wait()
+    await txn.wait();
 
 
 };
