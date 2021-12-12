@@ -1,0 +1,124 @@
+<svg width="100%" height="100%" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <path id="cc" d="M62,512a450,450 0 1,0 900,0a450,450 0 1,0 -900,0" />
+        <pattern id="rects" x="0" y="0" width="64" height="64" patternUnits="userSpaceOnUse">
+            <rect x="0" y="12" width="64" height="22" />
+            <rect x="0" y="128" width="16" height="3" />
+            <rect x="0" y="64" width="21" height="16" />
+            <rect x="0" y="23" width="32" height="23" />
+        </pattern>
+        <filter id="df">
+            <feTurbulence type="turbulence" baseFrequency="0.009" numOctaves="5" result="turbulence" seed="473" />
+            <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="4" />
+            <feDisplacementMap in2="turbulence" in="blur" scale="30" xChannelSelector="R" yChannelSelector="G" />
+            <feSpecularLighting result="specOut" specularExponent="100" lighting-color="#ff33aa" surfaceScale="10">
+                <fePointLight x="64" y="64" z="50" />
+            </feSpecularLighting>
+            <feDisplacementMap in2="turbulence" in="blur" scale="1" xChannelSelector="R" yChannelSelector="G" />
+            <feComposite in="turbulence" in2="specOut" operator="in" />
+        </filter>
+        <style>
+            @font-face {
+                font-family: "Witchfinger";
+                src: url("https://assets.codepen.io/261096/Witchfinger.woff2") format("woff2")
+            }
+
+            #ct {
+                font-size: 40px;
+                font-family: "Witchfinger";
+                letter-spacing: 8px;
+                fill: rgba(255, 50, 200, 0.7);
+            }
+
+            g path,
+            g circle {
+                stroke-width: 3px;
+                stroke: rgba(255, 200, 255, 0.6);
+                fill: none;
+                stroke-linejoin="round"
+                transform-origin: center center;
+            }
+
+            @keyframes pulse {
+                0% {
+                    opacity: .6;
+                }
+
+                50% {
+                    opacity: 1;
+                }
+
+                100% {
+                    opacity: 0.6;
+                }
+            }
+
+            @keyframes rot {
+                0% {
+                    transform: rotate(0deg);
+                }
+
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            textPath {
+                animation: pulse 1s linear infinite;
+            }
+
+            #ct {
+                animation: rot 77s linear infinite;
+                transform: rotate(0deg);
+                transform-origin: center center;
+            }
+
+            #r {
+                animation: rot 60s linear reverse infinite;
+                transform: rotate(0deg);
+                transform-origin: center center;
+            }
+
+            #grid {
+                opacity: 0.1;
+            }
+        </style>
+        <clipPath id="c">
+            <circle cx="512" cy="512" r="400" />
+        </clipPath>
+    </defs>
+    <pattern id="p" x="0" y="0" width="1" height="1">
+        <g clip-path="url(#c)" id="sigil">
+            <rect x="0" y="0" width="1024" height="1024"
+                style="fill: url(#rects); filter: url(#df); transform: scale(8)" />
+            <g id="circles">
+                <circle cx="512" cy="256" r="64" />
+                <circle cx="256" cy="128" r="256" />
+            </g>
+            <g id="lines">
+                <path d="M0,0L512,512,64,128L0,0" />
+            </g>
+        </g>
+    </pattern>
+    <g id="r">
+        <rect x="0" y="0" width="1024" height="1024" style="fill: url(#p);" />
+        <rect x="0" y="0" width="1024" height="1024"
+            style="fill: url(#p); transform: rotate(120deg); transform-origin: 50% 50%;" />
+        <rect x="0" y="0" width="1024" height="1024"
+            style="fill: url(#p); transform: rotate(240deg); transform-origin: 50% 50%;" />
+    </g>
+    <g>
+        <circle cx="512" cy="512" r="475" />
+        <circle cx="512" cy="512" r="465" />
+    </g>
+    <g>
+        <circle cx="512" cy="512" r="400" />
+        <circle cx="512" cy="512" r="410" />
+    </g>
+    <text id="ct" lengthAdjust="spacing">
+        <textPath id="text" href="#cc">ARCANE DESTITUTION . This is eighty one characters in length which is the max
+            at .
+        </textPath>
+    </text>
+</svg>
