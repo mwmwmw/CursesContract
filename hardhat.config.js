@@ -23,7 +23,7 @@ module.exports = {
   settings: {
     allowUnlimitedContractSize: true,
     optimizer: {
-      enabled: false,
+      enabled: true,
       runs: 10,
     },
   },

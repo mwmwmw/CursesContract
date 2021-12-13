@@ -18,7 +18,7 @@ contract ReqsNFT is ERC721URIStorage {
 
     uint256 seed; 
 
-    event CURSED(address sender, uint256 tokenId, string name, string description, string SVG);
+    event CURSED(address sender, uint256 tokenId, string name, string SVG);
   
     string json1 = '{"name":"';
     string json2 = '","description":"';
@@ -27,12 +27,11 @@ contract ReqsNFT is ERC721URIStorage {
 
     constructor() ERC721("C U R S E S", "REQS") {
         console.log("This is my NFT contract. Woah!");
-        seed = (block.timestamp + block.difficulty) % 1024000;
+        seed = (block.timestamp + block.difficulty);
     }
 
     function finalData(
         string memory name,
-        string memory description,
         string memory svg
     ) public view returns (string memory) {
         return
@@ -41,7 +40,7 @@ contract ReqsNFT is ERC721URIStorage {
                     json1,
                     name,
                     json2,
-                    description,
+                    name,
                     json3,
                     svg,
                     json4
@@ -49,7 +48,7 @@ contract ReqsNFT is ERC721URIStorage {
             );
     }
 
-    function GenNFT(string calldata name, string calldata description) public {
+    function GenNFT(string calldata name, string calldata description, uint256[6] calldata nb) public {
 
         // Get the current tokenId, this starts at 0.
         uint256 newItemId = _tokenIds.current();
@@ -63,22 +62,24 @@ contract ReqsNFT is ERC721URIStorage {
         _safeMint(msg.sender, newItemId);
         // Set the NFTs data.
 
-        CurseGenerator curse = new CurseGenerator();
-
         string memory SVG = Base64.encode(
-            bytes(curse.makeSVG(newItemId, seed, string(abi.encodePacked(name, ' . ', description))))
+            bytes(CurseGenerator.makeSVG(newItemId, seed, string(abi.encodePacked(name, description)), nb))
         );
 
         string memory meta = Base64.encode(
-            bytes(finalData(name, description, SVG))
+            bytes(finalData(name, SVG))
         );
+
+        console.log(name);
+        console.log(string(abi.encodePacked('data:image/svg+xml;base64,',SVG)));
+        console.log(' - - - - - - - - - - - - - - - - ');
 
         _setTokenURI(newItemId, string(abi.encodePacked('data:application/json;base64,',meta)));
 
         // Increment the counter for when the next NFT is minted.
         _tokenIds.increment();
 
-        emit CURSED(msg.sender, newItemId, name, description, SVG);
+        emit CURSED(msg.sender, newItemId, name, SVG);
 
     }
 }
