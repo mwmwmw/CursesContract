@@ -7,6 +7,12 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "test-contract": "npx hardhat run scripts/run.js",
     "deploy-local": "npx hardhat run scripts/deploy.js --network localhost",
+    "deploy-local-render": "npx hardhat run scripts/deployRenderer.js --network localhost",
+    "deploy-render-testnet": "npx hardhat run scripts/deployRenderer.js --network rinkeby",
+    "contract-balance-local": "npx hardhat run scripts/contractBalance.js --network localhost",
+    "contract-balance-testnet": "npx hardhat run scripts/contractBalance.js --network rinkeby",
+    "contract-withdraw-local": "npx hardhat run scripts/withdraw.js --network localhost",
+    "contract-withdraw-testnet": "npx hardhat run scripts/withdraw.js --network rinkeby",
     "deploy-testnet": "npx hardhat run scripts/deploy.js --network rinkeby"
   },
   "keywords": [],

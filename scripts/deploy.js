@@ -1,25 +1,31 @@
 
-function rint() {
-  return Math.floor(Math.random() * 1000000)%65535;
-}
+const { nftData } = require("./testData");
 
-function rint8() {
-  return Math.floor(Math.random() * 1000000)%256;
-}
+const configPath = `./config.${process.env.HARDHAT_NETWORK}.json`;
+const config = require(configPath);
+const { writeFile, copyFile } = require("./files");
 
 const main = async () => {
-  const nftContractFactory = await hre.ethers.getContractFactory('ReqsNFT');
-  const nftContract = await nftContractFactory.deploy();
+  const nftFactory = await hre.ethers.getContractFactory("ReqsNFT");
+  const nftContract = await nftFactory.deploy();
   await nftContract.deployed();
-  console.log("Contract deployed to:", nftContract.address);
 
+  config.MAIN_CONTRACT = nftContract.address;
 
-  for (var i = 0; i < 5; i++) {
-    const [name, desc, nb] = [`Noise Block ${i}`, `${new Array(Math.ceil(3 + Math.random()*3)).fill(0).map(v=>new Array(Math.ceil(Math.random()*6)).fill('x').join("")).join(" ")}`, [rint(), rint(), rint(), rint8(), rint(), rint8()]];
-    let txn = await nftContract.GenNFT(name, desc, nb, {gasLimit: 30000000});
-    console.log("Minted", name, desc, nb);
-    await txn.wait();
-  }
+  const renderFactory = await hre.ethers.getContractFactory("CurseGenerator");
+  const renderContract = await renderFactory.deploy();
+  await renderContract.deployed();
+
+  await nftContract.setRenderingContractAddress(config.MAIN_CONTRACT);
+
+  config.RENDER_CONTRACT = renderContract.address;
+
+  console.log("Contract deployed to:", {...config});
+
+  writeFile(`./scripts/${configPath}`, config);
+  writeFile(`../app/src/config.${process.env.HARDHAT_NETWORK}.json`, {contract: config.MAIN_CONTRACT});
+
+  await copyFile('./artifacts/contracts/ReqsNFT.sol/ReqsNFT.json', '../app/src/abi/ReqsNFT.json');
 
 };
 
