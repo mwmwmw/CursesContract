@@ -2,84 +2,109 @@
 
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
-
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./ICurses.sol";
+
 import "hardhat/console.sol";
-import "./Base64.sol";
 
-import "./CurseGenerator.sol";
-
-contract ReqsNFT is ERC721URIStorage {
+contract ReqsNFT is ERC721, Ownable, ReentrancyGuard {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
+    mapping(uint256 => ICurses.Curse) curses;
+    uint256 price = 5000000000000000;
 
-    uint256 seed; 
+    address public renderingContractAddress;
 
-    event CURSED(address sender, uint256 tokenId, string name, string SVG);
-  
-    string json1 = '{"name":"';
-    string json2 = '","description":"';
-    string json3 = '","image":"data:image/svg+xml;base64,';
-    string json4 = '"}';
+    event CURSED(address sender, uint256 tokenId, string name);
 
-    constructor() ERC721("C U R S E S", "REQS") {
-        console.log("This is my NFT contract. Woah!");
-        seed = (block.timestamp + block.difficulty);
-    }
+    constructor() ERC721("C U R S E S", "REQS") {}
 
-    function finalData(
-        string memory name,
-        string memory svg
-    ) public view returns (string memory) {
-        return
-            string(
-                abi.encodePacked(
-                    json1,
-                    name,
-                    json2,
-                    name,
-                    json3,
-                    svg,
-                    json4
-                )
-            );
-    }
-
-    function GenNFT(string calldata name, string calldata description, uint256[6] calldata nb) public {
-
+    function GenNFT(
+        string calldata curseName,
+        string calldata description,
+        uint256[6] calldata magic
+    ) public payable virtual {
+        require(msg.value >= price, "Not enough ETH sent; check price!");
         // Get the current tokenId, this starts at 0.
         uint256 newItemId = _tokenIds.current();
 
-
-        if(newItemId >= 50) {
-            revert("No Curses Remain...");
+        if (newItemId >= 10000) {
+            revert("The magic power has faded...");
         }
 
-        // Actually mint the NFT to the sender using msg.sender.
+        ICurses.Curse memory curse;
+
+        curse.name = curseName;
+        curse.description = description;
+        curse.magic = magic;
+
+        curse.seed = uint256(
+            keccak256(
+                abi.encodePacked(
+                    newItemId,
+                    msg.sender,
+                    block.difficulty,
+                    block.timestamp
+                )
+            )
+        );
+
         _safeMint(msg.sender, newItemId);
-        // Set the NFTs data.
 
-        string memory SVG = Base64.encode(
-            bytes(CurseGenerator.makeSVG(newItemId, seed, string(abi.encodePacked(name, description)), nb))
-        );
+        curses[newItemId] = curse;
 
-        string memory meta = Base64.encode(
-            bytes(finalData(name, SVG))
-        );
+        emit CURSED(msg.sender, newItemId, curseName);
 
-        console.log(name);
-        console.log(string(abi.encodePacked('data:image/svg+xml;base64,',SVG)));
-        console.log(' - - - - - - - - - - - - - - - - ');
-
-        _setTokenURI(newItemId, string(abi.encodePacked('data:application/json;base64,',meta)));
-
-        // Increment the counter for when the next NFT is minted.
         _tokenIds.increment();
+    }
 
-        emit CURSED(msg.sender, newItemId, name, SVG);
+    function setRenderingContractAddress(address _renderingContractAddress)
+        public
+        onlyOwner
+    {
+        renderingContractAddress = _renderingContractAddress;
+    }
 
+    function setPrice(uint256 _price) public onlyOwner {
+        price = _price;
+    }
+
+    function totalCurses() public view virtual returns (uint256) {
+        return _tokenIds.current();
+    }
+
+    // function contractURI() public view returns (string memory) {
+    //     return "https://metadata-url.com/my-metadata";
+    // }
+
+    function tokenURI(uint256 _tokenId)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        require(
+            _exists(_tokenId),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
+
+        if (renderingContractAddress == address(0)) {
+            return "";
+        }
+
+        ICurseRenderer renderer = ICurseRenderer(renderingContractAddress);
+        return renderer.tokenURI(_tokenId, curses[_tokenId]);
+    }
+
+    receive() external payable {}
+
+    function withdraw() public onlyOwner {
+        (bool success, ) = msg.sender.call{value: address(this).balance}("");
+        require(success, "Withdrawal failed");
     }
 }
