@@ -49,7 +49,7 @@ const main = async () => {
     }
 
 
-    // console.log(await nftContract.tokenURI(limit - 1));
+    console.log(await nftContract.tokenURI(limit - 1));
 
     contractBalance = await hre.ethers.provider.getBalance(randomPerson.address);
     console.log(
