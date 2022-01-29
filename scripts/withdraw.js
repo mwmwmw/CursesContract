@@ -2,7 +2,7 @@ const {nftData} = require("./testData");
 
 const ABI = require("../artifacts/contracts/ReqsNFT.sol/ReqsNFT.json");
 
-const configPath = `./scripts/config.${process.env.HARDHAT_NETWORK}.json`;
+const configPath = `./config.${process.env.HARDHAT_NETWORK}.json`;
 const config = require(configPath);
 
 const contractAddress = config.MAIN_CONTRACT;
