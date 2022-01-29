@@ -77,10 +77,6 @@ contract ReqsNFT is ERC721, Ownable, ReentrancyGuard {
         return _tokenIds.current();
     }
 
-    // function contractURI() public view returns (string memory) {
-    //     return "https://metadata-url.com/my-metadata";
-    // }
-
     function tokenURI(uint256 _tokenId)
         public
         view
