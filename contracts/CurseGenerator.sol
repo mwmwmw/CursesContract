@@ -7,6 +7,33 @@ import "./Base64.sol";
 import "./ICurses.sol";
 
 contract CurseGenerator {
+    string[7] internal types = [
+        "Ancient",
+        "Legendary",
+        "Arcane",
+        "Mystical",
+        "Void",
+        "Tyrannical",
+        "Unholy"
+    ];
+    string[16] internal quality = [
+        "Diabolical",
+        "Visionary",
+        "Godlike",
+        "Prophetic",
+        "Glib",
+        "Destitute",
+        "Impious",
+        "Blasphemous",
+        "Sacrilegious",
+        "Irreverent",
+        "Wicked",
+        "Evil",
+        "Corrupt",
+        "Depraved",
+        "Infernal",
+        "Romantic"
+    ];
     string internal constant svgElementOpen =
         '<svg width="100%" height="100%" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect x="0" y="0" width="1024" height="1024" style="fill: #0f070f;" clip-path="url(#c)" />';
     string internal constant svgElementClose = "</svg>";
@@ -22,11 +49,100 @@ contract CurseGenerator {
     string internal constant json2 = '","description":"';
     string internal constant json3 = '","image":"data:image/svg+xml;base64,';
     string internal constant json4 = '"}';
+    string internal constant json5 = '}';
+
+    string internal constant trait1 = '{"trait_type":"';
+    string internal constant trait2 = '","value": "';
+    string internal constant trait3 = '","value":';
+
+    // modified from openzepplin jswt lib
+    function len(string memory str) internal pure returns (uint) {
+        
+        bytes32 self;
+
+        assembly {
+            self := mload(add(str, 32))
+        }
+
+        uint ret;
+        if (self == 0)
+            return 0;
+        if (self & bytes32(uint256(0xffffffffffffffffffffffffffffffff)) == 0) {
+            ret += 16;
+            self = bytes32(uint(self) / 0x100000000000000000000000000000000);
+        }
+        if (self & bytes32(uint256(0xffffffffffffffff)) == 0) {
+            ret += 8;
+            self = bytes32(uint(self) / 0x10000000000000000);
+        }
+        if (self & bytes32(uint256(0xffffffff)) == 0) {
+            ret += 4;
+            self = bytes32(uint(self) / 0x100000000);
+        }
+        if (self & bytes32(uint256(0xffff)) == 0) {
+            ret += 2;
+            self = bytes32(uint(self) / 0x10000);
+        }
+        if (self & bytes32(uint256(0xff)) == 0) {
+            ret += 1;
+        }
+        return 32 - ret;
+    }
+
+    function trait(string memory name, string memory value)
+        public
+        pure
+        returns (bytes memory)
+    {
+        return bytes(abi.encodePacked(trait1, name, trait2, value, json4));
+    }
+
+    function traitNum(string memory name, string memory value)
+        public
+        pure
+        returns (bytes memory)
+    {
+        return bytes(abi.encodePacked(trait1, name, trait3, value, json5));
+    }
+
+
+    function getAttributes(ICurses.Curse memory curse)
+        public
+        view
+        returns (string memory)
+    {
+        return
+            string(
+                abi.encodePacked(
+                    '","attributes": [',
+                        trait("Type", 
+                            types[len(curse.name) % 7]),
+                        ",",
+                        trait(
+                            "Quality",
+                            quality[len(curse.description) % 16]),
+                        ",",
+                        traitNum(
+                            "Hate",
+                            Strings.toString(curse.magic[0]%256)),
+                        ",",
+                        traitNum(
+                            "Malice",
+                            Strings.toString(curse.magic[1]%256)),
+                        ",",
+                        traitNum(
+                            "Power",
+                            Strings.toString(curse.magic[2]%256)),
+                    "]"
+                )
+            );
+    }
 
     function finalData(
         string memory name,
         string memory description,
-        string memory svg
+        string memory svg,
+        string memory attributes
     ) public pure returns (bytes memory) {
         return
             bytes(
@@ -37,7 +153,8 @@ contract CurseGenerator {
                     description,
                     json3,
                     svg,
-                    json4
+                    attributes,
+                    json5
                 )
             );
     }
@@ -229,11 +346,11 @@ contract CurseGenerator {
 
     function tokenURI(uint256 tokenId, ICurses.Curse memory curse)
         external
-        pure
+        view
         returns (string memory)
     {
-        
-        string memory meta = Base64.encode(finalData(
+        string memory meta = Base64.encode(
+            finalData(
                 curse.name,
                 curse.description,
                 Base64.encode(
@@ -251,9 +368,11 @@ contract CurseGenerator {
                             svgElementClose
                         )
                     )
-                )
-            ));
+                ),
+                getAttributes(curse)
+            )
+        );
 
-        return string(abi.encodePacked('data:application/json;base64,',meta));
+        return string(abi.encodePacked("data:application/json;base64,", meta));
     }
 }
