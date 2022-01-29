@@ -1,6 +1,8 @@
 
 const { nftData } = require("./testData");
 
+const { writeFile, copyFile } = require("./files");
+
 const configPath = `./config.${process.env.HARDHAT_NETWORK}.json`;
 const config = require(configPath);
 
